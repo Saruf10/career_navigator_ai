@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Career Navigator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://rsms.me/inter/inter.css');
+        html.dark { color-scheme: dark; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f0f4f8; 
+            transition: background-color 0.3s ease;
+        }
+        html.dark body { background-color: #0f172a; }
+        #sidebar-menu { transition: transform 0.3s ease-in-out; }
+        .prose dark:prose-invert { color: inherit; }
+        .btn-primary { background-image: linear-gradient(to right, #4f46e5, #8b5cf6); color: white; transition: all .3s ease; border-radius: 0.75rem; font-weight: 600; }
+        .btn-primary:hover { box-shadow: 0 10px 15px -3px rgb(79 70 229 / 0.4), 0 4px 6px -4px rgb(79 70 229 / 0.4); transform: translateY(-2px); }
+        .loader { border: 4px solid #e5e7eb; border-top: 4px solid #4f46e5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        html.dark .loader { border-color: #374151; border-top-color: #6366f1; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="app-container bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-4xl"></div>
+
+    <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/50 z-30"></div>
+    <div id="sidebar-menu" class="fixed top-0 left-0 h-full w-80 bg-white dark:bg-slate-800 shadow-2xl z-40 flex flex-col transform -translate-x-full">
+        <div class="p-4 flex items-center justify-between border-b dark:border-slate-700">
+            <div id="sidebar-header-content"></div>
+            <button id="sidebar-close-btn" class="text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div id="sidebar-content-container" class="flex-grow overflow-y-auto p-4"></div>
+    </div>
+    
+    <div id="details-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-black/75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b dark:border-slate-700"><h3 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-white"></h3><button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button></div>
+            <div id="modal-body" class="p-6 overflow-y-auto">
+                <div id="modal-loader" class="flex justify-center items-center p-8"><div class="loader"></div></div>
+                <div id="modal-content" class="hidden prose dark:prose-invert max-w-none"></div>
+            </div>
+        </div>
+    </div>
+
+    <template id="auth-template"> <div class="p-8"> <div class="text-center mb-8"> <h1 class="text-4xl font-extrabold" style="background: -webkit-linear-gradient(45deg, #4f46e5, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI Career Navigator</h1> <p class="text-gray-500 dark:text-slate-400 mt-2">Your personalized guide to the future of work</p> </div> <div class="max-w-md mx-auto"> <div class="flex border-b border-gray-200 dark:border-slate-700 mb-6"> <button id="login-tab" class="flex-1 py-2 text-center font-semibold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600">Login</button> <button id="register-tab" class="flex-1 py-2 text-center font-semibold text-gray-500 dark:text-slate-400">Register</button> </div> <form id="login-form"> <div class="mb-4"><label for="login-email" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Email</label><input type="email" id="login-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-md shadow-sm" required></div> <div class="mb-6"><label for="login-password" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Password</label><input type="password" id="login-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-md shadow-sm" required minlength="6"></div> <button type="submit" class="w-full btn-primary py-2.5 px-4">Login</button> </form> <form id="register-form" class="hidden"> <div class="mb-4"><label for="register-email" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Email</label><input type="email" id="register-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-md shadow-sm" required></div> <div class="mb-6"><label for="register-password" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Password</label><input type="password" id="register-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-md shadow-sm" required minlength="6"></div> <button type="submit" class="w-full btn-primary py-2.5 px-4">Create Account</button> </form> <p id="auth-error" class="text-red-500 text-sm mt-4 text-center"></p> </div> </div> </template>
+    <template id="profile-template"> <div class="p-8 max-w-md mx-auto text-center"> <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Setup Your Profile</h2> <p class="text-gray-500 dark:text-slate-400 mb-6">Let's get your profile ready.</p> <form id="profile-form"> <div class="mb-6 text-left"><label for="displayName" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Display Name</label><input type="text" id="displayName" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-md shadow-sm" required minlength="3" maxlength="30"></div> <div class="mb-6 text-left"><label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Choose an Avatar</label><div id="avatar-selection" class="grid grid-cols-4 gap-4"></div></div> <button type="submit" class="w-full btn-primary py-2.5 px-4">Save Profile & Continue</button> </form> </div> </template>
+    <template id="quiz-template"> <div class="p-8 max-w-lg mx-auto text-center"> <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Tell Us About Yourself</h2> <p class="text-gray-500 dark:text-slate-400 mb-6">Your answers help create the perfect career path for you!</p> <form id="quiz-form"> <div class="mb-4 text-left"><label for="skills" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Your Skills</label><textarea id="skills" rows="3" class="mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900" placeholder="e.g., Python, public speaking" required></textarea></div> <div class="mb-4 text-left"><label for="interests" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Your Interests</label><textarea id="interests" rows="3" class="mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900" placeholder="e.g., Artificial intelligence" required></textarea></div> <div class="mb-6 text-left"><label for="experience" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Your Experience Level</label><select id="experience" class="mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900"><option>Beginner / Student</option><option>Intermediate</option><option>Advanced</option></select></div> <button type="submit" class="w-full btn-primary py-2.5 px-4">Generate My Roadmap</button> </form> </div> </template>
+    <template id="dashboard-template"> <div class="p-8"> <div id="dashboard-wrapper" class="hidden"> <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-200 dark:border-slate-700"> <button id="profile-btn" title="View Profile & Recommendations" class="flex items-center gap-2 text-left font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700/50 p-3 rounded-lg transition-colors"> <img id="user-avatar-small" class="w-8 h-8 rounded-full"> <span>Profile</span> </button> <div class="flex items-center gap-2"> <button id="settings-btn" title="Settings" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700"><i data-lucide="settings" class="w-5 h-5 text-gray-500 dark:text-slate-400"></i></button> <button id="regenerate-roadmap-btn" title="Generate New Roadmap" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700"><i data-lucide="refresh-cw" class="w-5 h-5 text-gray-500 dark:text-slate-400"></i></button> <button id="logout-btn" title="Logout" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700"><i data-lucide="log-out" class="w-5 h-5 text-gray-500 dark:text-slate-400"></i></button> </div> </div> <div id="career-summary" class="prose dark:prose-invert max-w-none text-gray-700 dark:text-slate-300 my-6 p-5 bg-indigo-50 dark:bg-slate-700/50 rounded-lg border"></div> <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-xl">Your Personalized Roadmap</h3> <div class="relative py-8"> <div class="absolute top-0 left-5 w-1 bg-gray-200 dark:bg-slate-700 h-full rounded"></div> <div id="timeline-progress" class="absolute top-0 left-5 w-1 bg-indigo-500 h-0 rounded" style="transition: height 0.5s ease;"></div> <div id="roadmap-list" class="space-y-8"></div> </div> </div> <div id="loading-spinner" class="flex justify-center items-center py-16"><div class="loader"></div></div> </div> </template>
+    <template id="settings-template"> <div class="p-8 max-w-lg mx-auto"> <div class="flex items-center gap-4 mb-6 pb-4 border-b dark:border-slate-700"> <button id="back-to-dashboard-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700"><i data-lucide="arrow-left" class="w-5 h-5 text-gray-600 dark:text-slate-400"></i></button> <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Settings</h2> </div> <form id="settings-form"> <div class="mb-4"><label for="settings-displayName" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Display Name</label><input type="text" id="settings-displayName" class="mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900" required></div> <div class="mb-4"><label for="settings-email" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Email (Cannot be changed)</label><input type="email" id="settings-email" class="mt-1 block w-full rounded-md shadow-sm bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400" disabled></div> <div class="mb-6"><label for="settings-phone" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Phone Number (Optional)</label><input type="tel" id="settings-phone" class="mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900"></div> <button type="submit" class="w-full btn-primary py-2.5 px-4">Save Changes</button> <p id="settings-success" class="text-green-600 dark:text-green-400 text-sm mt-4 text-center"></p> </form> <div class="mt-8 pt-6 border-t dark:border-slate-700"> <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Appearance</h3> <div class="flex items-center justify-between mt-4"> <label for="dark-mode-toggle" class="text-gray-600 dark:text-slate-300">Dark Mode</label> <button id="dark-mode-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-gray-200 dark:bg-slate-600"> <span class="sr-only">Enable dark mode</span> <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span> </button> </div> </div> </div> </template>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+        const app = document.getElementById('app');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+        const sidebarContentContainer = document.getElementById('sidebar-content-container');
+        const sidebarHeaderContent = document.getElementById('sidebar-header-content');
+        let currentUser = null;
+        let selectedAvatar = 'avatar-1';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDarkMode = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            lucide.createIcons();
+            checkAuthState();
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('#close-modal-btn')) document.getElementById('details-modal').classList.add('hidden');
+            });
+            sidebarCloseBtn.addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+        });
+
+        async function fetchAPI(endpoint, method = 'GET', body = null) { const token = localStorage.getItem('accessToken'); const headers = { 'Content-Type': 'application/json' }; if (token) headers['Authorization'] = `Bearer ${token}`; const config = { method, headers }; if (body) config.body = JSON.stringify(body); const response = await fetch(`${API_URL}${endpoint}`, config); if (!response.ok) { let errorDetail = 'An API error occurred'; try { const error = await response.json(); errorDetail = error.detail || errorDetail; } catch (e) {} throw new Error(errorDetail); } if (response.headers.get("content-type")?.includes("application/json")) return response.json(); }
+        async function checkAuthState() { const token = localStorage.getItem('accessToken'); if (!token) return renderView('auth'); try { currentUser = await fetchAPI('/users/me'); if (!currentUser.profile_setup_completed) renderView('profile'); else if (!currentUser.quiz_completed) renderView('quiz'); else renderView('dashboard'); } catch (error) { console.error("Auth check failed:", error); handleLogout(); } }
+        function renderView(viewName) { const template = document.getElementById(`${viewName}-template`); if (!template) return; app.innerHTML = template.innerHTML; lucide.createIcons(); const viewInitializers = { auth: setupAuthListeners, profile: setupProfileListeners, quiz: setupQuizListeners, dashboard: setupDashboardListeners, settings: setupSettingsListeners, }; viewInitializers[viewName]?.(); }
+        function setupAuthListeners() { document.getElementById('login-tab').addEventListener('click', () => showTab('login')); document.getElementById('register-tab').addEventListener('click', () => showTab('register')); document.getElementById('register-form').addEventListener('submit', handleRegister); document.getElementById('login-form').addEventListener('submit', handleLogin); }
+        function setupProfileListeners() { populateAvatars(); document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate); document.getElementById('displayName').value = currentUser.displayName || ''; }
+        function setupQuizListeners() { document.getElementById('quiz-form').addEventListener('submit', handleQuizSubmit); }
+        function setupDashboardListeners() { document.getElementById('regenerate-roadmap-btn').addEventListener('click', handleRegenerateRoadmap); document.getElementById('settings-btn').addEventListener('click', () => renderView('settings')); document.getElementById('logout-btn').addEventListener('click', handleLogout); document.getElementById('profile-btn').addEventListener('click', openSidebar); displayDashboard(); }
+        function setupSettingsListeners() { const toggle = document.getElementById('dark-mode-toggle'); document.getElementById('back-to-dashboard-btn').addEventListener('click', () => renderView('dashboard')); document.getElementById('settings-displayName').value = currentUser.displayName; document.getElementById('settings-email').value = currentUser.email; document.getElementById('settings-phone').value = currentUser.phoneNumber || ''; document.getElementById('settings-form').addEventListener('submit', handleSettingsUpdate); if (document.documentElement.classList.contains('dark')) { toggle.querySelector('span').classList.add('translate-x-5'); } toggle.addEventListener('click', () => { document.documentElement.classList.toggle('dark'); toggle.querySelector('span').classList.toggle('translate-x-5'); localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light'; }); }
+        
+        function displayDashboard() {
+            if (!currentUser?.quiz_completed || !currentUser.ai_roadmap) { document.getElementById('loading-spinner').classList.remove('hidden'); document.getElementById('dashboard-wrapper').classList.add('hidden'); return; }
+            document.getElementById('loading-spinner').classList.add('hidden');
+            document.getElementById('dashboard-wrapper').classList.remove('hidden');
+            document.getElementById('user-avatar-small').src = `https://api.dicebear.com/8.x/pixel-art/svg?seed=${currentUser.avatar}.svg`;
+            const { summary, roadmap } = currentUser.ai_roadmap;
+            document.getElementById('career-summary').innerHTML = marked.parse(summary || '');
+            renderVisualRoadmap(roadmap);
+        }
+
+        function renderVisualRoadmap(roadmap) { const roadmapList = document.getElementById('roadmap-list'); const timelineProgress = document.getElementById('timeline-progress'); roadmapList.innerHTML = ''; if (!roadmap) return; const totalSteps = roadmap.length; const completedCount = currentUser.completed_steps?.length || 0; const progress = totalSteps > 1 ? (completedCount / (totalSteps - 1)) * 100 : (completedCount === 1 ? 100 : 0); timelineProgress.style.height = `${progress}%`; roadmap.forEach((step, index) => { const isCompleted = currentUser.completed_steps?.includes(index); const item = document.createElement('div'); item.className = `relative pl-12`; item.innerHTML = `<div class="absolute left-5 top-1 -translate-x-1/2 w-6 h-6 rounded-full border-4 ${isCompleted ? 'bg-indigo-500 border-white dark:border-slate-800' : 'bg-gray-300 border-white dark:border-slate-800'}"></div><div class="p-4 rounded-xl flex items-start gap-4 transition-all duration-300 ${isCompleted ? 'bg-green-50 dark:bg-green-500/10 text-gray-500 dark:text-slate-400' : 'bg-white dark:bg-slate-900 border dark:border-slate-700 shadow-sm'}"><div class="flex-grow cursor-pointer" onclick="handleStepClick({ title: \`${step.title.replace(/`/g, "\\`")}\`, description: \`${step.description.replace(/`/g, "\\`")}\`, type: \`${step.type}\` })"><div class="flex justify-between items-center"><h4 class="font-semibold ${isCompleted ? 'line-through' : 'text-gray-800 dark:text-white'}">${step.title}</h4><span class="text-xs font-bold px-2 py-1 rounded-full ${isCompleted ? 'bg-green-200 text-green-800' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800'}">+${step.xp} XP</span></div><p class="text-sm text-gray-600 dark:text-slate-400 mt-1">${step.description}</p></div><input type="checkbox" onchange="handleCompleteStep(${index}, this)" class="h-6 w-6 rounded border-gray-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500" ${isCompleted ? 'checked disabled' : ''}></div>`; roadmapList.appendChild(item); }); }
+        
+        // --- NEW SIDEBAR LOGIC ---
+        function openSidebar() {
+            sidebarMenu.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+            renderSidebarMainMenu(); // Start with the main menu
+        }
+
+        function closeSidebar() {
+            sidebarMenu.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        }
+
+        function renderSidebarMainMenu() {
+            sidebarHeaderContent.innerHTML = `<img src="https://api.dicebear.com/8.x/pixel-art/svg?seed=${currentUser.avatar}.svg" class="w-10 h-10 rounded-full"><div class="text-left"><p class="font-bold text-gray-800 dark:text-white">${currentUser.displayName}</p><p class="text-xs text-gray-500 dark:text-slate-400">${currentUser.ai_roadmap.careerTitle}</p></div>`;
+            const menuItems = [
+                { label: 'Skill Gap Analysis', type: 'skillGaps', icon: 'check-circle' },
+                { label: 'Courses & Internships', type: 'recommendations', icon: 'book-open' },
+                { label: 'Job Recommendations', type: 'jobs', icon: 'briefcase' }
+            ];
+            sidebarContentContainer.innerHTML = menuItems.map(item => `
+                <button onclick="renderSidebarListView('${item.type}')" class="w-full flex items-center justify-between text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700">
+                    <span class="flex items-center gap-3"><i data-lucide="${item.icon}" class="w-5 h-5 text-indigo-500"></i><span>${item.label}</span></span>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                </button>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        async function renderSidebarListView(type) {
+            sidebarHeaderContent.innerHTML = `<button onclick="renderSidebarMainMenu()" class="flex items-center gap-2 text-sm p-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back</button>`;
+            sidebarContentContainer.innerHTML = `<div class="flex justify-center py-8"><div class="loader"></div></div>`;
+            lucide.createIcons();
+
+            let contentHTML = '';
+            try {
+                if (type === 'skillGaps') {
+                    const data = await fetchAPI('/api/skill-gaps');
+                    if (data.skill_gaps?.length > 0) {
+                        contentHTML = data.skill_gaps.map(gap => `<button onclick="handleSidebarItemClick(this)" data-title="${gap}" data-context="Skill Gap" class="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700">${gap}</button>`).join('');
+                    } else { contentHTML = `<p class="text-sm text-gray-500 p-3">No skill gaps identified.</p>`; }
+                } else if (type === 'recommendations') {
+                    const data = await fetchAPI('/api/recommendations');
+                    if (data.recommendations?.length > 0) {
+                        contentHTML = data.recommendations.map(rec => `<div class="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700"><button onclick="handleSidebarItemClick(this)" data-title="${rec.title}" data-context="${rec.type}" class="w-full text-left"><p class="font-semibold text-sm">${rec.title}</p><p class="text-xs text-gray-500 dark:text-slate-400">${rec.type}</p></button><a href="${rec.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs text-indigo-500 hover:underline mt-2">View <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a></div>`).join('');
+                    } else { contentHTML = `<p class="text-sm text-gray-500 p-3">No recommendations available.</p>`; }
+                } else if (type === 'jobs') {
+                    const data = await fetchAPI('/jobs/search', 'POST', { job_title: currentUser.ai_roadmap.careerTitle });
+                    if (data?.length > 0) {
+                        contentHTML = data.map(job => `<div class="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700"><button onclick="handleSidebarItemClick(this)" data-title="${job.job_title}" data-context="Job Posting" class="w-full text-left"><p class="font-semibold text-sm">${job.job_title}</p><p class="text-xs text-gray-500 dark:text-slate-400">${job.company_name}</p></button><a href="${job.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs text-indigo-500 hover:underline mt-2">View <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a></div>`).join('');
+                    } else { contentHTML = `<p class="text-sm text-gray-500 p-3">No sample jobs found.</p>`; }
+                }
+            } catch (error) {
+                contentHTML = `<p class="text-sm text-red-500 p-3">Could not load content.</p>`;
+            }
+            sidebarContentContainer.innerHTML = contentHTML;
+            lucide.createIcons();
+        }
+
+        async function handleSidebarItemClick(element) { const title = element.dataset.title; const context = element.dataset.context; const modal = document.getElementById('details-modal'); modal.classList.remove('hidden'); modal.querySelector('#modal-loader').classList.remove('hidden'); modal.querySelector('#modal-content').classList.add('hidden'); modal.querySelector('#modal-title').textContent = title; try { const data = await fetchAPI('/get-details', 'POST', { title, context }); modal.querySelector('#modal-content').innerHTML = marked.parse(data.details); } catch (error) { modal.querySelector('#modal-content').innerHTML = `<p class="text-red-500">Could not load details.</p>`; } finally { modal.querySelector('#modal-loader').classList.add('hidden'); modal.querySelector('#modal-content').classList.remove('hidden'); } }
+        async function handleCompleteStep(index, checkbox) { checkbox.disabled = true; try { const data = await fetchAPI('/complete-step', 'POST', { stepIndex: index }); currentUser.xp = data.new_xp; currentUser.level = data.new_level; currentUser.completed_steps.push(index); renderVisualRoadmap(currentUser.ai_roadmap.roadmap); const rect = checkbox.getBoundingClientRect(); confetti({ particleCount: 100, spread: 70, origin: { y: (rect.top + rect.height / 2) / window.innerHeight, x: (rect.left + rect.width / 2) / window.innerWidth } }); } catch (error) { checkbox.checked = false; checkbox.disabled = false; } }
+        async function handleRegister(e) { e.preventDefault(); const email = e.target.elements['register-email'].value, password = e.target.elements['register-password'].value; const errorEl = document.getElementById('auth-error'); errorEl.textContent = ''; try { await fetchAPI('/register', 'POST', { email, password }); alert('Registration successful! Please log in.'); showTab('login'); e.target.reset(); } catch(error) { errorEl.textContent = error.message; } }
+        async function handleLogin(e) { e.preventDefault(); const email = e.target.elements['login-email'].value, password = e.target.elements['login-password'].value; const errorEl = document.getElementById('auth-error'); errorEl.textContent = ''; try { const data = await fetchAPI('/token', 'POST', { email, password }); localStorage.setItem('accessToken', data.access_token); await checkAuthState(); } catch(error) { errorEl.textContent = error.message; } }
+        async function handleProfileUpdate(e) { e.preventDefault(); const profileData = { displayName: e.target.elements.displayName.value, avatar: selectedAvatar }; try { await fetchAPI('/update-profile', 'POST', profileData); await checkAuthState(); } catch(error) { alert(error.message); } }
+        async function handleQuizSubmit(e) { e.preventDefault(); const quizData = { skills: e.target.elements.skills.value, interests: e.target.elements.interests.value, experience: e.target.elements.experience.value }; renderView('dashboard'); try { await fetchAPI('/submit-quiz', 'POST', quizData); await checkAuthState(); } catch (error) { alert(error.message); renderView('quiz'); } }
+        async function handleSettingsUpdate(e) { e.preventDefault(); const successMsg = document.getElementById('settings-success'); successMsg.textContent = ''; const details = { displayName: e.target.elements['settings-displayName'].value, phoneNumber: e.target.elements['settings-phone'].value }; try { await fetchAPI('/update-user-details', 'POST', details); successMsg.textContent = "Profile saved!"; currentUser.displayName = details.displayName; currentUser.phoneNumber = details.phoneNumber; setTimeout(() => successMsg.textContent = '', 2000); } catch (error) { successMsg.textContent = "Failed to save."; } }
+        async function handleStepClick(step) { await handleSidebarItemClick({ dataset: { title: step.title, context: `Roadmap Step: ${step.type}` } }); }
+        function populateAvatars() { const container = document.getElementById('avatar-selection'); if(!container) return; container.innerHTML = Array.from({length: 8}, (_, i) => `<img src="https://api.dicebear.com/8.x/pixel-art/svg?seed=avatar-${i+1}.svg" data-avatar="avatar-${i+1}" class="w-16 h-16 rounded-full cursor-pointer p-1 border-2 ${i===0 ? 'border-indigo-500' : 'border-transparent'} hover:border-indigo-500">`).join(''); container.addEventListener('click', e => { if (e.target.tagName === 'IMG') { selectedAvatar = e.target.dataset.avatar; container.querySelectorAll('img').forEach(img => img.classList.toggle('border-indigo-500', img === e.target)); } }); }
+        function handleLogout() { localStorage.removeItem('accessToken'); currentUser = null; renderView('auth'); }
+        function showTab(tabName) { document.getElementById('auth-error').textContent = ''; const isLogin = tabName === 'login'; document.getElementById('login-tab').classList.toggle('border-indigo-600', isLogin); document.getElementById('register-tab').classList.toggle('border-indigo-600', !isLogin); document.getElementById('login-form').classList.toggle('hidden', !isLogin); document.getElementById('register-form').classList.toggle('hidden', isLogin); }
+        async function handleRegenerateRoadmap() { if (confirm("Are you sure you want to generate a new roadmap? This will overwrite your current progress.")) renderView('quiz'); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Compass AI - Your Future, Mapped Out</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://rsms.me/inter/inter.css');
+        body { font-family: 'Inter', sans-serif; }
+        .hero-bg {
+            background-color: #f3e8ff;
+            background-image:
+                radial-gradient(at 47% 33%, hsl(262.20, 76%, 63%) 0, transparent 59%),
+                radial-gradient(at 82% 65%, hsl(218.00, 89%, 63%) 0, transparent 55%);
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-br from-purple-600 to-fuchsia-500 p-2 rounded-lg">
+                    <i data-lucide="compass" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1 class="text-xl font-bold text-slate-900">Career Compass AI</h1>
+            </div>
+            <div>
+                <a href="./index.html" class="bg-indigo-600 text-white font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">Launch App</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="relative hero-bg pt-20 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+            <div class="container mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+                <div class="text-center md:text-left reveal">
+                    <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight">Find Your Perfect Career Path with AI</h1>
+                    <p class="mt-4 text-lg text-slate-700 max-w-lg mx-auto md:mx-0">Stop guessing. Get a personalized, step-by-step roadmap to your dream job based on your unique skills, interests, and goals.</p>
+                    <div class="mt-8">
+                        <a href="./index.html" class="bg-white text-indigo-600 font-bold px-8 py-4 rounded-lg shadow-lg hover:bg-slate-100 transition-transform transform hover:scale-105">
+                            Start Your Free Quiz
+                        </a>
+                    </div>
+                </div>
+                <div></div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12 reveal">
+                    <h2 class="text-3xl font-bold text-slate-900">Everything You Need to Succeed</h2>
+                    <p class="text-slate-600 mt-2">Our platform is packed with powerful, AI-driven features.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-slate-50/50 p-8 rounded-xl border border-slate-200 reveal">
+                        <i data-lucide="map" class="w-10 h-10 text-indigo-600"></i>
+                        <h3 class="mt-4 text-lg font-semibold">Personalized Roadmaps</h3>
+                        <p class="mt-2 text-slate-600">Get a step-by-step plan tailored to your unique profile and career goals.</p>
+                    </div>
+                    <div class="bg-slate-50/50 p-8 rounded-xl border border-slate-200 reveal" style="transition-delay: 200ms;">
+                        <i data-lucide="trophy" class="w-10 h-10 text-indigo-600"></i>
+                        <h3 class="mt-4 text-lg font-semibold">Gamified Progress</h3>
+                        <p class="mt-2 text-slate-600">Stay motivated by earning XP, leveling up, and tracking your progress.</p>
+                    </div>
+                    <div class="bg-slate-50/50 p-8 rounded-xl border border-slate-200 reveal" style="transition-delay: 400ms;">
+                        <i data-lucide="briefcase" class="w-10 h-10 text-indigo-600"></i>
+                        <h3 class="mt-4 text-lg font-semibold">Recommended Jobs</h3>
+                        <p class="mt-2 text-slate-600">Discover job roles perfectly matched to your skills and interests.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-3xl font-bold text-slate-900">Your Journey to Career Clarity</h2>
+                    <p class="text-slate-600 mt-2">Unlock your potential in four simple steps.</p>
+                </div>
+                <div class="relative">
+                    <div class="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-200"></div>
+                    <div class="grid md:grid-cols-4 gap-12 relative">
+                        <div class="text-center reveal"><div class="relative inline-block"><div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">1</div></div><h3 class="mt-4 font-semibold">Take the AI Quiz</h3><p class="text-sm text-slate-600 mt-1">Tell us about your skills, interests, and experience.</p></div>
+                        <div class="text-center reveal" style="transition-delay: 200ms;"><div class="relative inline-block"><div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">2</div></div><h3 class="mt-4 font-semibold">Get Your Roadmap</h3><p class="text-sm text-slate-600 mt-1">Receive a personalized, step-by-step plan.</p></div>
+                        <div class="text-center reveal" style="transition-delay: 400ms;"><div class="relative inline-block"><div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">3</div></div><h3 class="mt-4 font-semibold">Track Your Progress</h3><p class="text-sm text-slate-600 mt-1">Complete steps, earn XP, and watch your skills grow.</p></div>
+                        <div class="text-center reveal" style="transition-delay: 600ms;"><div class="relative inline-block"><div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">4</div></div><h3 class="mt-4 font-semibold">Achieve Your Goals</h3><p class="text-sm text-slate-600 mt-1">Confidently apply for jobs with your new skills.</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 hero-bg">
+            <div class="container mx-auto px-6 text-center reveal">
+                <h2 class="text-3xl font-extrabold text-slate-900">Ready to Discover Your Future?</h2>
+                <p class="mt-3 text-lg text-slate-800 max-w-xl mx-auto">Take the first step towards a career you'll love. Our AI-powered quiz is free, fast, and insightful.</p>
+                <div class="mt-8">
+                    <a href="./index.html" class="bg-slate-900 text-white font-bold px-8 py-4 rounded-lg shadow-lg hover:bg-black transition-transform transform hover:scale-105">
+                        Start My Journey Now
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-8">
+        <div class="container mx-auto px-6 text-center text-slate-500">
+            <p>&copy; 2025 Career Compass AI. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
